@@ -17,4 +17,4 @@ The author of this repository ([christianceb](https://github.com/christianceb); 
 
 - As of writing (22 March 2026), no AI/LLM has been used (yet) to produce any part of code here.
 - The author does not intend to utilise AI/LLM on this project. Should the requirement arise, this AI declaration will be updated if code published here (in part or in full) originated from AI/LLM.
-- Such AI/LLM use is not just limited to code generation, but also on research or as a writing assistant.
+    - Such AI/LLM use is not just limited to code generation, but also on research or as a writing assistant.
