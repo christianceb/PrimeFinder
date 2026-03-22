@@ -5,7 +5,8 @@
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    std::cout << "# PrimeFinder\n";
+    std::cout << "Hello CSP3341! - SN 10673966\n";
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
