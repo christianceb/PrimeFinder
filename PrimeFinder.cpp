@@ -24,11 +24,55 @@ vector<int> megaIterator(int inclusiveFrom, int exclusiveTo) {
     return result;
 }
 
+uint64_t nearestNext(uint64_t number, uint64_t next) {
+    if (number == 0) {
+        return 0;
+    }
+
+    uint64_t distanceToNext = number % next;
+
+    if (distanceToNext == 0) {
+        return number;
+    }
+    else {
+        return (number + next) - distanceToNext;
+    }
+}
+
 void SieveOfEratosthenes(uint64_t upToInclusive)
 {
-    // Determine bus size (BS) and how many buses (BC) we need for this operation
+    vector<uint64_t> _;
+    vector<vector<uint64_t>> buses;
 
-    // Iterate through BC, fill list with size BS with numbers up to upToInclusive
+    // TODO MAX_BUS_SIZE is probably not int and not returning a value (it's currently -1)
+    const int MAX_BUS_SIZE = _.max_size(), MIN_BUS_SIZE = 1000;
+    const int BUS_COUNT = ceil(upToInclusive / MIN_BUS_SIZE), BUS_SIZE = MIN_BUS_SIZE;
+
+    uint64_t primalityTestNumber = 2;
+
+    for (size_t busIndex = 0; busIndex < BUS_COUNT; busIndex++)
+    {
+        vector<uint64_t> bus;
+
+        uint64_t maxPrimalityTestNumber = nearestNext(primalityTestNumber, MIN_BUS_SIZE);
+
+        if (maxPrimalityTestNumber == primalityTestNumber) {
+            maxPrimalityTestNumber += MIN_BUS_SIZE;
+        }
+
+        while (primalityTestNumber <= maxPrimalityTestNumber) {
+            bus.push_back(primalityTestNumber);
+
+            primalityTestNumber++;
+        }
+
+        buses.push_back(bus);
+    }
+
+
+    // OK - Determine bus size (BS) and how many buses (BC) we need for this operation
+
+    // OK - Iterate through BC, fill list with size BS with numbers up to upToInclusive
 
     // Set counter to 2
 
@@ -55,9 +99,9 @@ void sieve_bucketer(int buckets = 2) {
         thread.join();
     }
     
-    for (int x = 0; threads[0].size; ) {
+    //for (int x = 0; threads[0].size; ) {
 
-    }
+    //}
 }
 
 vector<uint64_t> sieve(vector<uint64_t> bucket, uint64_t divisor)
@@ -126,7 +170,7 @@ int main()
 
     //sieve_bucketer(2);
 
-    SieveOfEratosthenes(mersenne_19digits);
+    SieveOfEratosthenes(100000);
 
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
