@@ -24,6 +24,23 @@ vector<int> megaIterator(int inclusiveFrom, int exclusiveTo) {
     return result;
 }
 
+void SieveOfEratosthenes(uint64_t upToInclusive)
+{
+    // Determine bus size (BS) and how many buses (BC) we need for this operation
+
+    // Iterate through BC, fill list with size BS with numbers up to upToInclusive
+
+    // Set counter to 2
+
+    // Go through buses as threads and run the sieve with counter against it. Maybe pass as reference?
+
+    // Once completed, find on which bucket <counter + 1> is. Find the first number greater than counter
+
+    // From the bus where <counter+1> was found, iterate backwards and see if modulo by it returns 0. If it is, go back on the last step to find another number <counter + n>
+
+    // Repeat the threaded task until upToInclusive is hit
+}
+
 void sieve_bucketer(int buckets = 2) {
     std::vector<std::thread> threads;
 
@@ -107,7 +124,9 @@ int main()
     //cout << "# PrimeFinder\n";
     //cout << "Hello CSP3341! - SN 10673966\n";
 
-    sieve_bucketer(2);
+    //sieve_bucketer(2);
+
+    SieveOfEratosthenes(mersenne_19digits);
 
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
