@@ -200,28 +200,38 @@ FindNextGtIndexResult findNextGt(size_t number, vector<vector<size_t>> buses, si
     return result;
 }
 
-//bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t> bus) {
-//
-//}
+bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t>& bus) {
+    size_t busSize = bus.size();
+
+    for (size_t j = 0; j < busSize; j++) {
+        // Terminate as soon as number is bigger than result
+        if (bus[j] > number) {
+            return false;
+        }
+
+        if (number % bus[j] == 0) {
+            return true;
+        }
+    }
+
+    // Unlikely to end up here but just in case.
+    return false;
+}
 
 bool isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses) {
-    // TODO can probably div-counquer each bus with threads?
+    std::vector<future<bool>> futures;
 
-    // Do naive with no optimisations first (o^n)
-    // Start with smaller numbers as they are much more likely to be divisible
-    for (size_t i = 0; i <= result.busIndex; i++)
+    for (size_t busIndex = 0; busIndex <= result.busIndex; busIndex++)
     {
-        size_t busSize = buses[i].size();
+        futures.push_back(async(isNumberDivisibleByNumbersLt, result.inBusFindResult.value, ref(buses[busIndex])));
+    }
 
-        for (size_t j = 0; j < busSize; j++) {
-            // Terminate as soon as number is bigger than result
-            if (buses[i][j] > result.inBusFindResult.value) {
-                return false;
-            }
-
-            if (result.inBusFindResult.value % buses[i][j] == 0) {
-                return true;
-            }
+    for (size_t i = 0; i < futures.size(); i++)
+    {
+        bool hasDivisible = futures[i].get();
+        
+        if (hasDivisible) {
+            return true;
         }
     }
 
@@ -233,15 +243,11 @@ void SieveOfEratosthenes(const size_t upToInclusive)
     vector<vector<size_t>> buses = sievePrep(upToInclusive);
     std::vector<std::thread> threads;
     
-    //size_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
     size_t divisor = STARTING_PRIMALITY_TEST_NUMBER;
 
     while (divisor <= upToInclusive) {
         threads.clear();
 
-        // OK - Determine bus size (BS) and how many buses (BC) we need for this operation
-
-        // OK - Iterate through BC, fill list with size BS with numbers up to upToInclusive
         for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
         {
             threads.push_back(thread(sieveThreadedPointer, ref(buses[busIndex]), divisor));
@@ -275,17 +281,6 @@ void SieveOfEratosthenes(const size_t upToInclusive)
             }
         }
     }
-
-
-    // Set counter to 2
-
-    // Go through buses as threads and run the sieve with counter against it. Maybe pass as reference?
-
-    // Once completed, find on which bucket <counter + 1> is. Find the first number greater than counter
-
-    // From the bus where <counter+1> was found, iterate backwards and see if modulo by it returns 0. If it is, go back on the last step to find another number <counter + n>
-
-    // Repeat the threaded task until upToInclusive is hit
 }
 
 bool primality_test(size_t number) {
