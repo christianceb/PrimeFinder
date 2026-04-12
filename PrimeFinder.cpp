@@ -11,7 +11,7 @@
 
 using namespace std;
 
-
+const int STARTING_PRIMALITY_TEST_NUMBER = 2;
 
 vector<int> megaIterator(int inclusiveFrom, int exclusiveTo) {
     vector<int> result;
@@ -39,16 +39,16 @@ uint64_t nearestNext(uint64_t number, uint64_t next) {
     }
 }
 
-void SieveOfEratosthenes(uint64_t upToInclusive)
-{
-    vector<uint64_t> _;
+// TODO it might be good to receive an address to a bus so we don't create a new one here
+vector<vector<uint64_t>> sievePrep(uint64_t upToInclusive) {
     vector<vector<uint64_t>> buses;
 
-    // TODO MAX_BUS_SIZE is probably not int and not returning a value (it's currently -1)
-    const int MAX_BUS_SIZE = _.max_size(), MIN_BUS_SIZE = 1000;
-    const int BUS_COUNT = ceil(upToInclusive / MIN_BUS_SIZE), BUS_SIZE = MIN_BUS_SIZE;
+    const uint64_t MAX_BUS_SIZE = vector<uint64_t>().max_size();
+    const uint64_t MIN_BUS_SIZE = 1000;
+    const uint64_t BUS_COUNT = (upToInclusive + MIN_BUS_SIZE - 1) / MIN_BUS_SIZE;
+    const uint64_t BUS_SIZE = MIN_BUS_SIZE;
 
-    uint64_t primalityTestNumber = 2;
+    uint64_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
 
     for (size_t busIndex = 0; busIndex < BUS_COUNT; busIndex++)
     {
@@ -69,10 +69,27 @@ void SieveOfEratosthenes(uint64_t upToInclusive)
         buses.push_back(bus);
     }
 
+    return buses;
+}
+
+void SieveOfEratosthenes(uint64_t upToInclusive)
+{
+    vector<vector<uint64_t>> buses = sievePrep(upToInclusive);
+    std::vector<std::thread> threads;
+    
+    uint64_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
 
     // OK - Determine bus size (BS) and how many buses (BC) we need for this operation
 
     // OK - Iterate through BC, fill list with size BS with numbers up to upToInclusive
+
+    for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
+    {
+        vector<uint64_t> bus = buses[busIndex];
+        
+        threads.emplace_back(thread(sieve, bus, primalityTestNumber));
+        buses[busIndex] = sieve(bus, primalityTestNumber);
+    }
 
     // Set counter to 2
 
