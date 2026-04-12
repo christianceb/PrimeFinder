@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <future>
+#include <functional>
 
 using namespace std;
 
@@ -24,12 +25,12 @@ vector<int> megaIterator(int inclusiveFrom, int exclusiveTo) {
     return result;
 }
 
-uint64_t nearestNext(uint64_t number, uint64_t next) {
+size_t nearestNext(size_t number, size_t next) {
     if (number == 0) {
         return 0;
     }
 
-    uint64_t distanceToNext = number % next;
+    size_t distanceToNext = number % next;
 
     if (distanceToNext == 0) {
         return number;
@@ -40,21 +41,21 @@ uint64_t nearestNext(uint64_t number, uint64_t next) {
 }
 
 // TODO it might be good to receive an address to a bus so we don't create a new one here
-vector<vector<uint64_t>> sievePrep(uint64_t upToInclusive) {
-    vector<vector<uint64_t>> buses;
+vector<vector<size_t>> sievePrep(size_t upToInclusive) {
+    vector<vector<size_t>> buses;
 
-    const uint64_t MAX_BUS_SIZE = vector<uint64_t>().max_size();
-    const uint64_t MIN_BUS_SIZE = 1000;
-    const uint64_t BUS_COUNT = (upToInclusive + MIN_BUS_SIZE - 1) / MIN_BUS_SIZE;
-    const uint64_t BUS_SIZE = MIN_BUS_SIZE;
+    //const size_t MAX_BUS_SIZE = vector<size_t>().max_size();
+    const size_t MIN_BUS_SIZE = 100;
+    const size_t BUS_COUNT = (upToInclusive + MIN_BUS_SIZE - 1) / MIN_BUS_SIZE;
+    const size_t BUS_SIZE = MIN_BUS_SIZE;
 
-    uint64_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
+    size_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
 
     for (size_t busIndex = 0; busIndex < BUS_COUNT; busIndex++)
     {
-        vector<uint64_t> bus;
+        vector<size_t> bus;
 
-        uint64_t maxPrimalityTestNumber = nearestNext(primalityTestNumber, MIN_BUS_SIZE);
+        size_t maxPrimalityTestNumber = nearestNext(primalityTestNumber, MIN_BUS_SIZE);
 
         if (maxPrimalityTestNumber == primalityTestNumber) {
             maxPrimalityTestNumber += MIN_BUS_SIZE;
@@ -72,24 +73,220 @@ vector<vector<uint64_t>> sievePrep(uint64_t upToInclusive) {
     return buses;
 }
 
-void SieveOfEratosthenes(uint64_t upToInclusive)
+vector<size_t> sieve(vector<size_t> bus, size_t divisor)
 {
-    vector<vector<uint64_t>> buses = sievePrep(upToInclusive);
+    vector<size_t> sieved;
+
+    for (size_t i = 0; i < bus.size(); i++)
+    {
+        if (bus[i] == divisor || bus[i] % divisor != 0) {
+            sieved.push_back(bus[i]);
+        }
+    }
+
+    return sieved;
+}
+
+void sieveThreadedPointer(vector<size_t>& bus, size_t divisor) {
+    bus = sieve(bus, divisor);
+}
+
+int64_t linearFindGtIndexInList(size_t number, vector<size_t> bus)
+{
+    for (size_t i = 0; i < bus.size(); i++)
+    {
+        if (bus[i] > number) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int64_t btsFindGtIndexInList(
+    size_t number,
+    vector<size_t> bus,
+    int64_t leftMostIndex = -1,
+    int64_t rightMostIndex = -1
+) {
+    if (rightMostIndex > leftMostIndex) {
+        return -1;
+    }
+
+    if (leftMostIndex == -1 && rightMostIndex == -1) {
+        leftMostIndex = 0;
+        rightMostIndex = bus.size() - 1;
+    }
+
+    size_t middleIndex = leftMostIndex + (rightMostIndex - leftMostIndex) / 2;
+    size_t middle = bus[middleIndex];
+
+    // nextNumberNoOverflow - if the number next to the middle index is not an overflow relative to rightMostIndex
+    // middleMatch - If the middle is equal number
+    // numberIsSandwiched - If middle is less than number, but the next number (provided not an overflow) is greater than number (1 < 2 > 3)
+    bool nextNumberNoOverflow = middleIndex + 1 <= rightMostIndex,
+        middleMatch = middle == number,
+        numberIsSandwiched = middle < number && (nextNumberNoOverflow && bus[middleIndex + 1] > number);
+
+    if ((middleMatch || numberIsSandwiched) && nextNumberNoOverflow) {
+        return middleIndex + 1;
+    }
+    else if ((rightMostIndex - leftMostIndex) == 1) {
+        // There are only two items left. Check the right one since left <= number
+        if (bus[rightMostIndex] > number) {
+            return rightMostIndex;
+        }
+        else {
+            return -1;
+        }
+    }
+
+    int64_t leftMostSearch = -1, rightMostSearch = -1;
+
+    if (number < middle) {
+        leftMostSearch = btsFindGtIndexInList(number, bus, leftMostIndex, middleIndex - 1);
+    }
+    else {
+        rightMostSearch = btsFindGtIndexInList(number, bus, middleIndex + 1, rightMostIndex);
+    }
+
+    if (leftMostSearch != -1) {
+        return leftMostSearch;
+    }
+    else if (rightMostSearch != -1) {
+        return rightMostSearch;
+    }
+
+    return -1;
+}
+
+struct FindNextGtInBusResult {
+    size_t value;
+    size_t index;
+};
+
+struct FindNextGtIndexResult {
+    bool found = false;
+    size_t busIndex;
+    FindNextGtInBusResult inBusFindResult;
+};
+
+FindNextGtIndexResult findNextGt(size_t number, vector<vector<size_t>> buses, size_t upToInclusive) {
+    const size_t MIN_BUS_SIZE = 1000;
+    const size_t BUS_COUNT = buses.size();
+    const size_t BUS_SIZE = MIN_BUS_SIZE;
+
+    size_t guessNumberBusIndex = floor(number/BUS_SIZE);
+    size_t nextGtIndex;
+    bool nextGtFound = false;
+
+    while (guessNumberBusIndex < BUS_COUNT) {
+        //while (nextGtFound == false) {
+            int64_t busSearchResult = linearFindGtIndexInList(number, buses[guessNumberBusIndex]);
+
+            if (busSearchResult >= 0) {
+                nextGtIndex = busSearchResult;
+                nextGtFound = true;
+                break;
+            }
+        //}
+
+        //if (nextGtFound) {
+        //    break;
+        //}
+
+        guessNumberBusIndex++;
+    }
+
+    FindNextGtIndexResult result;
+
+    if (nextGtFound) {
+        result.found = true;
+        result.busIndex = guessNumberBusIndex;
+
+        result.inBusFindResult.index = nextGtIndex;
+        result.inBusFindResult.value = buses[result.busIndex][result.inBusFindResult.index];
+    }
+
+    return result;
+}
+
+//bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t> bus) {
+//
+//}
+
+bool isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses) {
+    // TODO can probably div-counquer each bus with threads?
+
+    // Do naive with no optimisations first (o^n)
+    // Start with smaller numbers as they are much more likely to be divisible
+    for (size_t i = 0; i <= result.busIndex; i++)
+    {
+        size_t busSize = buses[i].size();
+
+        for (size_t j = 0; j < busSize; j++) {
+            // Terminate as soon as number is bigger than result
+            if (buses[i][j] > result.inBusFindResult.value) {
+                return false;
+            }
+
+            if (result.inBusFindResult.value % buses[i][j] == 0) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void SieveOfEratosthenes(const size_t upToInclusive)
+{
+    vector<vector<size_t>> buses = sievePrep(upToInclusive);
     std::vector<std::thread> threads;
     
-    uint64_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
+    //size_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
+    size_t divisor = STARTING_PRIMALITY_TEST_NUMBER;
 
-    // OK - Determine bus size (BS) and how many buses (BC) we need for this operation
+    while (divisor <= upToInclusive) {
+        threads.clear();
 
-    // OK - Iterate through BC, fill list with size BS with numbers up to upToInclusive
+        // OK - Determine bus size (BS) and how many buses (BC) we need for this operation
 
-    for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
-    {
-        vector<uint64_t> bus = buses[busIndex];
-        
-        threads.emplace_back(thread(sieve, bus, primalityTestNumber));
-        buses[busIndex] = sieve(bus, primalityTestNumber);
+        // OK - Iterate through BC, fill list with size BS with numbers up to upToInclusive
+        for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
+        {
+            threads.push_back(thread(sieveThreadedPointer, ref(buses[busIndex]), divisor));
+        }
+
+        // Wait for all threads
+        for (thread& t : threads) {
+            t.join();
+        }
+
+        bool canUseResultAsNextDivisor = false;
+        FindNextGtIndexResult candidateDivisor;
+
+        while (!canUseResultAsNextDivisor) {
+            // Find the next divisor 
+            candidateDivisor = findNextGt(divisor, buses, upToInclusive);
+
+            // If a candidate divisor can't be found, it's likely because we have exhausted all the numbers up to upToInclusive
+            if (!candidateDivisor.found) {
+                // Setting the divisor higher than upToInclusive will terminate the loop.
+                divisor = upToInclusive + 1;
+
+                break;
+            }
+
+            // Check if the candidateDivisor is divisible by the numbers less than the ones sieved    
+            canUseResultAsNextDivisor = isFindResultDivisibleByLtNumbersInBuses(candidateDivisor, buses);
+
+            if (canUseResultAsNextDivisor) {
+                divisor = candidateDivisor.inBusFindResult.value;
+            }
+        }
     }
+
 
     // Set counter to 2
 
@@ -102,42 +299,9 @@ void SieveOfEratosthenes(uint64_t upToInclusive)
     // Repeat the threaded task until upToInclusive is hit
 }
 
-void sieve_bucketer(int buckets = 2) {
-    std::vector<std::thread> threads;
-
-    //for (int i = 0; i < buckets; i++)
-    //{
-    //    threads.emplace_back(thread(iterator, )
-    //}
-    threads.emplace_back(thread(megaIterator, 0, 1000));
-    threads.emplace_back(thread(megaIterator, 1000, 2000));
-
-    for (auto& thread : threads) {
-        thread.join();
-    }
-    
-    //for (int x = 0; threads[0].size; ) {
-
-    //}
-}
-
-vector<uint64_t> sieve(vector<uint64_t> bucket, uint64_t divisor)
-{
-    vector<uint64_t> sieved;
-
-    for (uint64_t i = 0; i < bucket.size(); i++)
-    {
-        if (bucket[i] % divisor == 0) {
-            sieved.push_back(bucket[i]);
-        }
-    }
-
-    return sieved;
-}
-
-bool primality_test(uint64_t number) {
-    uint64_t sqrtOf = sqrt(number);
-    vector<uint64_t> primeFactors = {2, 3};
+bool primality_test(size_t number) {
+    size_t sqrtOf = sqrt(number);
+    vector<size_t> primeFactors = {2, 3};
     
     //cout << to_string(UINT64_MAX/primeFactors.max_size()); // 8
     //cout << to_string(primeFactors.max_size()); // 2305843009213693951
@@ -147,14 +311,14 @@ bool primality_test(uint64_t number) {
     }
 
     for (
-        uint64_t probableFactor = 2;
+        size_t probableFactor = 2;
         probableFactor <= sqrtOf;
         probableFactor++
     )
     {
         bool skipPrimeFactor = false;
 
-        for (uint64_t primeFactor: primeFactors)
+        for (size_t primeFactor: primeFactors)
         {
             if (primeFactor % probableFactor == 0) {
                 skipPrimeFactor = true;
@@ -177,17 +341,15 @@ bool primality_test(uint64_t number) {
 
 int main()
 {
-    constexpr uint64_t mersenne_19digits{ 2305843009213693951 };
-    constexpr uint64_t isthisprime{ 541 };
+    constexpr size_t mersenne_19digits{ 2305843009213693951 };
+    constexpr size_t isthisprime{ 541 };
 
     //cout << to_string(UINT64_MAX);
 
     //cout << "# PrimeFinder\n";
     //cout << "Hello CSP3341! - SN 10673966\n";
 
-    //sieve_bucketer(2);
-
-    SieveOfEratosthenes(100000);
+    SieveOfEratosthenes(1000);
 
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
