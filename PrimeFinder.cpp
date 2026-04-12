@@ -46,7 +46,7 @@ vector<vector<size_t>> sievePrep(size_t upToInclusive) {
     vector<vector<size_t>> buses;
 
     //const size_t MAX_BUS_SIZE = vector<size_t>().max_size();
-    const size_t MIN_BUS_SIZE = 100;
+    const size_t MIN_BUS_SIZE = 10000;
     const size_t BUS_COUNT = (upToInclusive + MIN_BUS_SIZE - 1) / MIN_BUS_SIZE;
     const size_t BUS_SIZE = MIN_BUS_SIZE;
 
