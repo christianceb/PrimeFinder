@@ -109,8 +109,11 @@ int64_t btsFindGtIndexInList(
     int64_t leftMostIndex = -1,
     int64_t rightMostIndex = -1
 ) {
-    if (rightMostIndex > leftMostIndex) {
+    // Avoid silly halvings (they do happen, seems just a bad bound check when btsFindGtIndexInList is recursive called, but this'll do)
+    if (leftMostIndex > rightMostIndex) {
         return -1;
+
+        //throw invalid_argument("Left-most index of btsFindGtIndexInList bigger than rightMostIndex (what?!)");
     }
 
     if (leftMostIndex == -1 && rightMostIndex == -1) {
@@ -118,7 +121,7 @@ int64_t btsFindGtIndexInList(
         rightMostIndex = bus.size() - 1;
     }
 
-    size_t middleIndex = leftMostIndex + (rightMostIndex - leftMostIndex) / 2;
+    size_t middleIndex = leftMostIndex + (rightMostIndex - leftMostIndex) / 2; // These divisions floor by default https://stackoverflow.com/a/21271883
     size_t middle = bus[middleIndex];
 
     // nextNumberNoOverflow - if the number next to the middle index is not an overflow relative to rightMostIndex
@@ -126,19 +129,11 @@ int64_t btsFindGtIndexInList(
     // numberIsSandwiched - If middle is less than number, but the next number (provided not an overflow) is greater than number (1 < 2 > 3)
     bool nextNumberNoOverflow = middleIndex + 1 <= rightMostIndex,
         middleMatch = middle == number,
-        numberIsSandwiched = middle < number && (nextNumberNoOverflow && bus[middleIndex + 1] > number);
+        numberIsSandwiched = middle < number && bus[middleIndex] > number;
 
-    if ((middleMatch || numberIsSandwiched) && nextNumberNoOverflow) {
-        return middleIndex + 1;
-    }
-    else if ((rightMostIndex - leftMostIndex) == 1) {
-        // There are only two items left. Check the right one since left <= number
-        if (bus[rightMostIndex] > number) {
-            return rightMostIndex;
-        }
-        else {
-            return -1;
-        }
+    // If the middle matches the number and the next number is not an overflow, we return the next number. If there is an overflow, we immediately return false.
+    if (middle == number || numberIsSandwiched) {
+        return nextNumberNoOverflow ? middleIndex + 1 : -1;
     }
 
     int64_t leftMostSearch = -1, rightMostSearch = -1;
@@ -172,7 +167,7 @@ struct FindNextGtIndexResult {
 };
 
 FindNextGtIndexResult findNextGt(size_t number, vector<vector<size_t>> buses, size_t upToInclusive) {
-    const size_t MIN_BUS_SIZE = 1000;
+    const size_t MIN_BUS_SIZE = 10000;
     const size_t BUS_COUNT = buses.size();
     const size_t BUS_SIZE = MIN_BUS_SIZE;
 
@@ -181,19 +176,13 @@ FindNextGtIndexResult findNextGt(size_t number, vector<vector<size_t>> buses, si
     bool nextGtFound = false;
 
     while (guessNumberBusIndex < BUS_COUNT) {
-        //while (nextGtFound == false) {
-            int64_t busSearchResult = linearFindGtIndexInList(number, buses[guessNumberBusIndex]);
+        int64_t busSearchResult = btsFindGtIndexInList(number, buses[guessNumberBusIndex]);
 
-            if (busSearchResult >= 0) {
-                nextGtIndex = busSearchResult;
-                nextGtFound = true;
-                break;
-            }
-        //}
-
-        //if (nextGtFound) {
-        //    break;
-        //}
+        if (busSearchResult >= 0) {
+            nextGtIndex = busSearchResult;
+            nextGtFound = true;
+            break;
+        }
 
         guessNumberBusIndex++;
     }
@@ -272,7 +261,7 @@ void SieveOfEratosthenes(const size_t upToInclusive)
 
             // If a candidate divisor can't be found, it's likely because we have exhausted all the numbers up to upToInclusive
             if (!candidateDivisor.found) {
-                // Setting the divisor higher than upToInclusive will terminate the loop.
+                // Setting the divisor higher than upToInclusive will terminate all loops.
                 divisor = upToInclusive + 1;
 
                 break;
@@ -344,12 +333,14 @@ int main()
     constexpr size_t mersenne_19digits{ 2305843009213693951 };
     constexpr size_t isthisprime{ 541 };
 
+    //int64_t x = btsFindGtIndexInList(3, { 3, 5, 7, 11, 13, 19 });
+
     //cout << to_string(UINT64_MAX);
 
     //cout << "# PrimeFinder\n";
     //cout << "Hello CSP3341! - SN 10673966\n";
 
-    SieveOfEratosthenes(1000);
+    SieveOfEratosthenes(100000);
 
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
