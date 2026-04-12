@@ -9,6 +9,7 @@
 #include <thread>
 #include <future>
 #include <functional>
+#include "Utils/Console.h"
 
 using namespace std;
 
@@ -204,6 +205,8 @@ bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t>& bus) {
     size_t busSize = bus.size();
 
     for (size_t j = 0; j < busSize; j++) {
+        Console::Print(to_string(bus[j]));
+
         // Terminate as soon as number is bigger than result
         if (bus[j] > number) {
             return false;
@@ -215,6 +218,22 @@ bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t>& bus) {
     }
 
     // Unlikely to end up here but just in case.
+    return false;
+}
+
+bool threadedIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses) {
+    std::vector<thread> threads;
+
+    for (size_t busIndex = 0; busIndex <= result.busIndex; busIndex++)
+    {
+        threads.push_back(thread(isNumberDivisibleByNumbersLt, result.inBusFindResult.value, ref(buses[busIndex])));
+    }
+
+    for (size_t i = 0; i < threads.size(); i++)
+    {
+        threads[i].join();
+    }
+
     return false;
 }
 
@@ -230,8 +249,32 @@ bool isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vecto
     {
         bool hasDivisible = futures[i].get();
         
+        Console::Print("Future=" + to_string(i));
+
         if (hasDivisible) {
             return true;
+        }
+    }
+
+    return false;
+}
+
+bool linearIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses) {
+    for (size_t i = 0; i <= result.busIndex; i++)
+    {
+        size_t busSize = buses[i].size();
+
+        for (size_t j = 0; j < busSize; j++) {
+            Console::Print("linearIsFindResultDivisibleByLtNumbersInBuses=" + to_string(buses[i][j]));
+
+            // Terminate as soon as number is bigger than result
+            if (buses[i][j] > result.inBusFindResult.value) {
+                return false;
+            }
+
+            if (result.inBusFindResult.value % buses[i][j] == 0) {
+                return true;
+            }
         }
     }
 
@@ -274,7 +317,8 @@ void SieveOfEratosthenes(const size_t upToInclusive)
             }
 
             // Check if the candidateDivisor is divisible by the numbers less than the ones sieved    
-            canUseResultAsNextDivisor = isFindResultDivisibleByLtNumbersInBuses(candidateDivisor, buses);
+            canUseResultAsNextDivisor = linearIsFindResultDivisibleByLtNumbersInBuses(candidateDivisor, buses);
+            //canUseResultAsNextDivisor = threadedIsFindResultDivisibleByLtNumbersInBuses(candidateDivisor, buses);
 
             if (canUseResultAsNextDivisor) {
                 divisor = candidateDivisor.inBusFindResult.value;
@@ -335,7 +379,7 @@ int main()
     //cout << "# PrimeFinder\n";
     //cout << "Hello CSP3341! - SN 10673966\n";
 
-    SieveOfEratosthenes(100000);
+    SieveOfEratosthenes(1000000); // From 1000000, adding three more zeroes will bring your computer to its knees (upwards to 10GB memory usage and 440+ threads simultaneously)
 
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
