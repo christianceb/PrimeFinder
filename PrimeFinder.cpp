@@ -297,16 +297,6 @@ bool linearIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result,
     return false;
 }
 
-ofstream createNewPrimeNumbersFile() {
-    string filename = "PRIMES_GENERATED_" + to_string(Temporal::timestampNow()) + ".txt";
-
-    ofstream fileStream;
-
-    fileStream.open(filename);
-
-    return fileStream;
-}
-
 void SieveOfEratosthenes(const size_t upToInclusive)
 {
     vector<vector<size_t>> buses = sievePrep(upToInclusive);
