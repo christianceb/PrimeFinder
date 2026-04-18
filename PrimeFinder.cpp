@@ -1,7 +1,6 @@
 // PrimeFinder.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-#include <iostream>
 #include <vector>
 #include <cmath>
 #include <cstdint>
@@ -10,10 +9,10 @@
 #include <future>
 #include <functional>
 #include "Utils/Console.h"
-#include <chrono>
 #include <fstream>
 #include "Utils/Temporal.h"
 #include "Classes/PrimalityTest.h"
+#include "Classes/PrimeFile.h"
 
 using namespace std;
 
@@ -353,17 +352,16 @@ void SieveOfEratosthenes(const size_t upToInclusive)
         }
     }
 
-    // Open stream
-    ofstream file = createNewPrimeNumbersFile();
+    PrimeFile file = PrimeFile();
 
     for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
     {
         for (size_t numberIndex = 0; numberIndex < buses[busIndex].size(); numberIndex++) {
-            file << to_string(buses[busIndex][numberIndex]) + "\n";
+            file.Write(to_string(buses[busIndex][numberIndex]));
         }
     }
 
-    file.close();
+    file.Close();
 }
 
 int main()

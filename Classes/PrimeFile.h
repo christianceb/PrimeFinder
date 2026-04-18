@@ -8,9 +8,12 @@ class PrimeFile
 {
 public:
     PrimeFile();
-    void Write(string line);
+    void Write(string line, bool lineBreak = true);
+    void Close();
+    string filename() const { return _filename; };
 
 private:
+    string _filename;
     ofstream createNewPrimeNumbersFile();
     ofstream primeNumberFileStream;
 };
