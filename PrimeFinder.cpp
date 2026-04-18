@@ -13,6 +13,7 @@
 #include <chrono>
 #include <fstream>
 #include "Utils/Temporal.h"
+#include "Classes/PrimalityTest.h"
 
 using namespace std;
 
@@ -365,46 +366,6 @@ void SieveOfEratosthenes(const size_t upToInclusive)
     file.close();
 }
 
-bool primality_test(size_t number) {
-    size_t sqrtOf = sqrt(number);
-    vector<size_t> primeFactors = {2, 3};
-    
-    //cout << to_string(UINT64_MAX/primeFactors.max_size()); // 8
-    //cout << to_string(primeFactors.max_size()); // 2305843009213693951
-
-    if (number % 2 == 0 || number % 3 == 0) {
-        return false;
-    }
-
-    for (
-        size_t probableFactor = 2;
-        probableFactor <= sqrtOf;
-        probableFactor++
-    )
-    {
-        bool skipPrimeFactor = false;
-
-        for (size_t primeFactor: primeFactors)
-        {
-            if (primeFactor % probableFactor == 0) {
-                skipPrimeFactor = true;
-
-                break;
-            }
-        }
-
-        if (skipPrimeFactor) {
-            continue;
-        }
-
-        while (number % probableFactor == 0) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 int main()
 {
     constexpr size_t mersenne_19digits{ 2305843009213693951 };
@@ -418,7 +379,7 @@ int main()
     //cout << "Hello CSP3341! - SN 10673966\n";
 
     SieveOfEratosthenes(1000); // From 1000000, adding three more zeroes will bring your computer to its knees (upwards to 10GB memory usage and 440+ threads simultaneously)
-
+    //PrimalityTest::Test(UINT64_MAX);
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
     //}
