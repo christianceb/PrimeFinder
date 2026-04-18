@@ -10,21 +10,13 @@
 #include <future>
 #include <functional>
 #include "Utils/Console.h"
+#include <chrono>
+#include <fstream>
 
 using namespace std;
 
 const int STARTING_PRIMALITY_TEST_NUMBER = 2;
-
-vector<int> megaIterator(int inclusiveFrom, int exclusiveTo) {
-    vector<int> result;
-
-    for (int i = inclusiveFrom; i < exclusiveTo; i++) {
-        cout << to_string(i) + "\n";
-        result.push_back(i);
-    }
-
-    return result;
-}
+const size_t MIN_BUS_SIZE = 10000;
 
 size_t nearestNext(size_t number, size_t next) {
     if (number == 0) {
@@ -45,8 +37,6 @@ size_t nearestNext(size_t number, size_t next) {
 vector<vector<size_t>> sievePrep(size_t upToInclusive) {
     vector<vector<size_t>> buses;
 
-    //const size_t MAX_BUS_SIZE = vector<size_t>().max_size();
-    const size_t MIN_BUS_SIZE = 10000;
     const size_t BUS_COUNT = (upToInclusive + MIN_BUS_SIZE - 1) / MIN_BUS_SIZE;
     const size_t BUS_SIZE = MIN_BUS_SIZE;
 
@@ -125,6 +115,14 @@ int64_t btsFindGtIndexInList(
     size_t middleIndex = leftMostIndex + (rightMostIndex - leftMostIndex) / 2; // These divisions floor by default https://stackoverflow.com/a/21271883
     size_t middle = bus[middleIndex];
 
+    /**
+     * Ideas on how to make this work:
+     * 
+     * - Either find exactly the index of the number
+     * - find a pair of indices where {x1 < number} and {x2 > number} by 1 index
+     * - or if the number is "cornered" such as that {number < left-most} or {number > right-most}, return -1 (is this really necessary?)
+     */
+
     // nextNumberNoOverflow - if the number next to the middle index is not an overflow relative to rightMostIndex
     // middleMatch - If the middle is equal number
     // numberIsSandwiched - If middle is less than number, but the next number (provided not an overflow) is greater than number (1 < 2 > 3)
@@ -156,6 +154,20 @@ int64_t btsFindGtIndexInList(
     return -1;
 }
 
+int64_t findGtIndexInList(
+    size_t number,
+    vector<size_t> bus,
+    bool useLinear = false
+) {
+    if (useLinear) {
+        // Slow O(n)
+        return linearFindGtIndexInList(number, bus);
+    }
+
+    // Fast O(log n) if it's working.
+    return btsFindGtIndexInList(number, bus);
+}
+
 struct FindNextGtInBusResult {
     size_t value;
     size_t index;
@@ -168,16 +180,19 @@ struct FindNextGtIndexResult {
 };
 
 FindNextGtIndexResult findNextGt(size_t number, vector<vector<size_t>> buses, size_t upToInclusive) {
-    const size_t MIN_BUS_SIZE = 10000;
     const size_t BUS_COUNT = buses.size();
     const size_t BUS_SIZE = MIN_BUS_SIZE;
-
+    
+    /**
+     * TODO we should not be guessing this. Based on the bus size and index, we should be able to know the upper and lower bound of the bus and return the correct index.
+     * We can even pass the hint of the upper/lower bounds of the bus
+     */
     size_t guessNumberBusIndex = floor(number/BUS_SIZE);
     size_t nextGtIndex;
     bool nextGtFound = false;
 
     while (guessNumberBusIndex < BUS_COUNT) {
-        int64_t busSearchResult = btsFindGtIndexInList(number, buses[guessNumberBusIndex]);
+        int64_t busSearchResult = findGtIndexInList(number, buses[guessNumberBusIndex], true);
 
         if (busSearchResult >= 0) {
             nextGtIndex = busSearchResult;
@@ -281,6 +296,23 @@ bool linearIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result,
     return false;
 }
 
+__int64 timestampNow() {
+    const auto now = chrono::system_clock::now();
+
+    //const __int64 timestamp =
+    return chrono::duration_cast<chrono::seconds>(now.time_since_epoch()).count();
+}
+
+ofstream createNewPrimeNumbersFile() {
+    string filename = "PRIMES_GENERATED_" + to_string(timestampNow()) + ".txt";
+
+    ofstream fileStream;
+
+    fileStream.open(filename);
+
+    return fileStream;
+}
+
 void SieveOfEratosthenes(const size_t upToInclusive)
 {
     vector<vector<size_t>> buses = sievePrep(upToInclusive);
@@ -325,6 +357,18 @@ void SieveOfEratosthenes(const size_t upToInclusive)
             }
         }
     }
+
+    // Open stream
+    ofstream file = createNewPrimeNumbersFile();
+
+    for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
+    {
+        for (size_t numberIndex = 0; numberIndex < buses[busIndex].size(); numberIndex++) {
+            file << to_string(buses[busIndex][numberIndex]) + "\n";
+        }
+    }
+
+    file.close();
 }
 
 bool primality_test(size_t number) {
@@ -379,7 +423,7 @@ int main()
     //cout << "# PrimeFinder\n";
     //cout << "Hello CSP3341! - SN 10673966\n";
 
-    SieveOfEratosthenes(1000000); // From 1000000, adding three more zeroes will bring your computer to its knees (upwards to 10GB memory usage and 440+ threads simultaneously)
+    SieveOfEratosthenes(1000); // From 1000000, adding three more zeroes will bring your computer to its knees (upwards to 10GB memory usage and 440+ threads simultaneously)
 
     //if (primality_test(UINT64_MAX)) {
     //    cout << "Yes";
