@@ -12,6 +12,7 @@
 #include "Utils/Console.h"
 #include <chrono>
 #include <fstream>
+#include "Utils/Temporal.h"
 
 using namespace std;
 
@@ -296,15 +297,8 @@ bool linearIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result,
     return false;
 }
 
-__int64 timestampNow() {
-    const auto now = chrono::system_clock::now();
-
-    //const __int64 timestamp =
-    return chrono::duration_cast<chrono::seconds>(now.time_since_epoch()).count();
-}
-
 ofstream createNewPrimeNumbersFile() {
-    string filename = "PRIMES_GENERATED_" + to_string(timestampNow()) + ".txt";
+    string filename = "PRIMES_GENERATED_" + to_string(Temporal::timestampNow()) + ".txt";
 
     ofstream fileStream;
 

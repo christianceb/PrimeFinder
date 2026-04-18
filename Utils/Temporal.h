@@ -1,6 +1,6 @@
 #pragma once
 
-class Time
+class Temporal
 {
 public:
     static __int64 timestampNow();
