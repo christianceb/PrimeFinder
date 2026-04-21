@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -127,15 +127,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Classes\EratosthenesSieve.cpp" />
+    <ClCompile Include="Classes\PrimalityTest.cpp" />
+    <ClCompile Include="Classes\PrimeFile.cpp" />
     <ClCompile Include="PrimeFinder.cpp" />
     <ClCompile Include="Utils\Console.cpp" />
+    <ClCompile Include="Utils\Temporal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="LICENSE" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Classes\EratosthenesSieve.h" />
+    <ClInclude Include="Classes\PrimalityTest.h" />
+    <ClInclude Include="Classes\PrimeFile.h" />
     <ClInclude Include="Utils\Console.h" />
+    <ClInclude Include="Utils\Temporal.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
