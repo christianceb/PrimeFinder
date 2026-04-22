@@ -4,10 +4,23 @@
 
 using namespace std;
 
+struct FindNextGtInBusResult {
+    size_t value;
+    size_t index;
+};
+
+struct FindNextGtIndexResult {
+    bool found = false;
+    size_t busIndex;
+    FindNextGtInBusResult inBusFindResult;
+};
+
 class EratosthenesSieve
 {
 public:
     EratosthenesSieve(size_t upToInclusive);
+
+    bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t>& bus);
 
 private:
     size_t nearestNext(size_t number, size_t next);
@@ -35,8 +48,6 @@ private:
 
     FindNextGtIndexResult findNextGt(size_t number, vector<vector<size_t>> buses, size_t upToInclusive);
 
-    bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t>& bus);
-
     bool threadedIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses);
 
     bool isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses);
@@ -46,15 +57,4 @@ private:
 private:
     const int STARTING_PRIMALITY_TEST_NUMBER = 2;
     const size_t MIN_BUS_SIZE = 10000;
-};
-
-struct FindNextGtInBusResult {
-    size_t value;
-    size_t index;
-};
-
-struct FindNextGtIndexResult {
-    bool found = false;
-    size_t busIndex;
-    FindNextGtInBusResult inBusFindResult;
 };

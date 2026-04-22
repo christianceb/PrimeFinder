@@ -3,10 +3,10 @@
 
 PrimeFile::PrimeFile()
 {
-    primeNumberFileStream = createNewPrimeNumbersFile();
+    createNewPrimeNumbersFile();
 }
 
-void PrimeFile::Write(string line, bool lineBreak = true)
+void PrimeFile::Write(string line, bool lineBreak)
 {
     if (primeNumberFileStream.is_open()) {
         primeNumberFileStream << line + (lineBreak ? "\n" : "");
@@ -20,7 +20,7 @@ void PrimeFile::Close()
     }
 }
 
-ofstream PrimeFile::createNewPrimeNumbersFile()
+void PrimeFile::createNewPrimeNumbersFile()
 {
     _filename = "PRIMES_GENERATED_" + to_string(Temporal::timestampNow()) + ".txt";
 

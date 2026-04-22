@@ -14,6 +14,6 @@ public:
 
 private:
     string _filename;
-    ofstream createNewPrimeNumbersFile();
+    void createNewPrimeNumbersFile();
     ofstream primeNumberFileStream;
 };
