@@ -18,7 +18,7 @@ struct FindNextGtIndexResult {
 class EratosthenesSieve
 {
 public:
-    EratosthenesSieve(size_t upToInclusive);
+    EratosthenesSieve(size_t upToInclusive, bool debug = false);
 
     bool isNumberDivisibleByNumbersLt(size_t number, vector<size_t>& bus);
 
@@ -57,4 +57,6 @@ private:
 private:
     const int STARTING_PRIMALITY_TEST_NUMBER = 2;
     const size_t MIN_BUS_SIZE = 10000;
+    const int LANES_WIDTH = 4;
+    bool debug = false;
 };

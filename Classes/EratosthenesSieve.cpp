@@ -6,24 +6,41 @@
 #include <cmath>
 #include <functional>
 
-EratosthenesSieve::EratosthenesSieve(size_t upToInclusive)
+EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, bool debug)
 {
+    this->debug = debug;
+
     vector<vector<size_t>> buses = sievePrep(upToInclusive);
     std::vector<std::thread> threads;
 
     size_t divisor = STARTING_PRIMALITY_TEST_NUMBER;
 
+    size_t fleetSize = buses.size();
+
     while (divisor <= upToInclusive) {
-        threads.clear();
+        size_t busIndex = 0;
+        size_t batchMaxBusIndex = 0;
 
-        for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
-        {
-            threads.push_back(thread(&EratosthenesSieve::sieveThreadedPointer, this, ref(buses[busIndex]), divisor));
-        }
+        while (busIndex < fleetSize) {
+            threads.clear();
 
-        // Wait for all threads
-        for (thread& t : threads) {
-            t.join();
+            batchMaxBusIndex += LANES_WIDTH;
+
+            // Prevent batchMaxBusIndex from overflowing the fleet size
+            if (batchMaxBusIndex >= fleetSize) {
+                batchMaxBusIndex = fleetSize;
+            }
+
+            while (busIndex < batchMaxBusIndex) {
+                threads.push_back(thread(&EratosthenesSieve::sieveThreadedPointer, this, ref(buses[busIndex]), divisor));
+
+                busIndex++;
+            }
+
+            // Wait for all threads
+            for (thread& t : threads) {
+                t.join();
+            }
         }
 
         bool canUseResultAsNextDivisor = false;
@@ -53,7 +70,7 @@ EratosthenesSieve::EratosthenesSieve(size_t upToInclusive)
 
     PrimeFile file = PrimeFile();
 
-    for (size_t busIndex = 0; busIndex < buses.size(); busIndex++)
+    for (size_t busIndex = 0; busIndex < fleetSize; busIndex++)
     {
         for (size_t numberIndex = 0; numberIndex < buses[busIndex].size(); numberIndex++) {
             file.Write(to_string(buses[busIndex][numberIndex]));
