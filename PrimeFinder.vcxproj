@@ -132,6 +132,7 @@
     <ClCompile Include="Classes\PrimeFile.cpp" />
     <ClCompile Include="PrimeFinder.cpp" />
     <ClCompile Include="Utils\Console.cpp" />
+    <ClCompile Include="Utils\StringUtil.cpp" />
     <ClCompile Include="Utils\Temporal.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClInclude Include="Classes\PrimalityTest.h" />
     <ClInclude Include="Classes\PrimeFile.h" />
     <ClInclude Include="Utils\Console.h" />
+    <ClInclude Include="Utils\StringUtil.h" />
     <ClInclude Include="Utils\Temporal.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

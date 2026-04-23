@@ -1,43 +1,63 @@
-// PrimeFinder.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
-#include <vector>
-#include <cmath>
-#include <cstdint>
-#include <string>
-#include <thread>
-#include <future>
-#include <functional>
-#include "Utils/Console.h"
-#include <fstream>
-#include "Utils/Temporal.h"
-#include "Classes/PrimalityTest.h"
-#include "Classes/PrimeFile.h"
 #include "Classes/EratosthenesSieve.h"
+#include "Utils/Temporal.h"
+#include "Utils/Console.h"
 
 using namespace std;
 
 int main()
 {
-    //constexpr size_t mersenne_19digits{ 2305843009213693951 };
-    //constexpr size_t isthisprime{ 541 };
+    bool exit = false;
 
-    //int64_t x = btsFindGtIndexInList(3, { 3, 5, 7, 11, 13, 19 });
+    size_t number = 100000;
+    size_t busSize = 10000;
+    int threads = 8;
 
-    //cout << to_string(UINT64_MAX);
+    string choice;
 
-    //cout << "# PrimeFinder\n";
-    //cout << "Hello CSP3341! - SN 10673966\n";
+    bool validNumberforPrimality = false;
 
-    // SieveOfEratosthenes(1000); // From 1000000, adding three more zeroes will bring your computer to its knees (upwards to 10GB memory usage and 440+ threads simultaneously)
+    while (!exit) {
+        validNumberforPrimality = false;
 
-    EratosthenesSieve(1000);
+        Console::Print("What do you want to do?\n");
 
-    //PrimalityTest::Test(UINT64_MAX);
-    //if (primality_test(UINT64_MAX)) {
-    //    cout << "Yes";
-    //}
-    //else {
-    //    cout << "Naur";
-    //}
+        Console::Print("[1] Check if a number is a prime or not");
+        Console::Print("[2] Run the sieve of eratosthenes up to a certain number");
+        Console::Print("[3] Exit");
+
+        
+        choice = Console::Read("Choice: ");
+
+        if (choice == "1") {
+            while (!validNumberforPrimality) {
+                choice = Console::Read("What number should be tested for primality?: ");
+
+                // Test if input is a valid number. Prompt again if input is not.
+                if (stoull(choice) > 0) {
+                    validNumberforPrimality = true;
+                    number = stoull(choice);
+                }
+            }
+
+            // Do primality check
+        }
+        else if (choice == "2") {
+            Console::Read("Up to what number should we find a prime number? (default=100000)");
+
+            Console::Read("How many numbers should be there in a thread? (default=10000)");
+
+            Console::Read("How many threads should there be running at a time? (default=8)");
+
+            // Process
+        }
+        else if (choice == "3") {
+            exit = true;
+        }
+    }
+
+    __int64 timeStart = Temporal::timestampNow();
+
+    EratosthenesSieve(100000, true);
+
+    Console::Print("Operation ended in " + Temporal::secondsToLocalisedHms(Temporal::timestampNow() - timeStart));
 }

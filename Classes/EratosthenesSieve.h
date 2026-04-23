@@ -56,7 +56,8 @@ private:
 
 private:
     const int STARTING_PRIMALITY_TEST_NUMBER = 2;
-    const size_t MIN_BUS_SIZE = 10000;
-    const int LANES_WIDTH = 4;
+    const size_t MIN_BUS_SIZE = 100000;
+    const int LANES_WIDTH = 10;
+
     bool debug = false;
 };

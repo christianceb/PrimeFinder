@@ -21,6 +21,21 @@
     <ClCompile Include="Utils\Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\EratosthenesSieve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\PrimalityTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\PrimeFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\Temporal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\StringUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -28,6 +43,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\EratosthenesSieve.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\PrimalityTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\PrimeFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Temporal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\StringUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

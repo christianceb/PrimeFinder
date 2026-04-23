@@ -6,6 +6,8 @@
 #include <cmath>
 #include <functional>
 
+using namespace std;
+
 EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, bool debug)
 {
     this->debug = debug;
@@ -21,6 +23,10 @@ EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, bool debug)
         size_t busIndex = 0;
         size_t batchMaxBusIndex = 0;
 
+        if (debug) {
+            Console::Print("Testing divisor " + to_string(divisor));
+        }
+
         while (busIndex < fleetSize) {
             threads.clear();
 
@@ -32,6 +38,10 @@ EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, bool debug)
             }
 
             while (busIndex < batchMaxBusIndex) {
+                if (debug) {
+                    Console::Print("Running bus index " + to_string(busIndex + 1) + " out of " + to_string(fleetSize) + "; Divisor " + to_string(divisor) + " out of " + to_string(upToInclusive));
+                }
+
                 threads.push_back(thread(&EratosthenesSieve::sieveThreadedPointer, this, ref(buses[busIndex]), divisor));
 
                 busIndex++;
@@ -268,7 +278,7 @@ bool EratosthenesSieve::isNumberDivisibleByNumbersLt(size_t number, vector<size_
     size_t busSize = bus.size();
 
     for (size_t j = 0; j < busSize; j++) {
-        Console::Print(to_string(bus[j]));
+        // Console::Print(to_string(bus[j]));
 
         // Terminate as soon as number is bigger than result
         if (bus[j] > number) {
@@ -314,7 +324,7 @@ bool EratosthenesSieve::isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexR
     {
         bool hasDivisible = futures[i].get();
 
-        Console::Print("Future=" + to_string(i));
+        // Console::Print("Future=" + to_string(i));
 
         if (hasDivisible) {
             return true;
@@ -326,12 +336,11 @@ bool EratosthenesSieve::isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexR
 
 bool EratosthenesSieve::linearIsFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses)
 {
-    for (size_t i = 0; i <= result.busIndex; i++)
-    {
+    for (size_t i = 0; i <= result.busIndex; i++) {
         size_t busSize = buses[i].size();
 
         for (size_t j = 0; j < busSize; j++) {
-            Console::Print("linearIsFindResultDivisibleByLtNumbersInBuses=" + to_string(buses[i][j]));
+            // Console::Print("linearIsFindResultDivisibleByLtNumbersInBuses=" + to_string(buses[i][j]));
 
             // Terminate as soon as number is bigger than result
             if (buses[i][j] > result.inBusFindResult.value) {
