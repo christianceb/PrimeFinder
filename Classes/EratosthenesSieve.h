@@ -33,13 +33,6 @@ private:
 
     int64_t linearFindGtIndexInList(size_t number, vector<size_t> bus);
 
-    int64_t btsFindGtIndexInList(
-        size_t number,
-        vector<size_t> bus,
-        int64_t leftMostIndex = -1,
-        int64_t rightMostIndex = -1
-    );
-
     int64_t findGtIndexInList(
         size_t number,
         vector<size_t> bus,

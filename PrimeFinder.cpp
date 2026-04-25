@@ -9,10 +9,6 @@ void application() {
 
     bool exit = false;
 
-    size_t number;
-    size_t busSize = 10000;
-    int threads = 8;
-
     string choice;
 
     bool validNumberforPrimality = false;
@@ -24,8 +20,10 @@ void application() {
         Console::Print("What do you want to do?\n");
 
         Console::Print("[1] Check if a number is a prime or not");
-        Console::Print("[2] Run the sieve of eratosthenes up to a certain number");
-        Console::Print("[3] Exit\n");
+        Console::Print("[2] Run a custom parameter Sieve of Eratosthenes");
+        Console::Print("[3] Run a Sieve of Eratosthenes basic preset (up to 10000, 1000 numbers per thread, 8 threads)");
+        Console::Print("[4] Run a Sieve of Eratosthenes advanced preset (up to 1000000, 250000 numbers per thread, 16 threads)");
+        Console::Print("[0] Exit\n");
         
         choice = Console::Read("Choice: ");
 
@@ -63,12 +61,7 @@ void application() {
 
             // Try and get an upToNumber
             while (numericInputAsString == "") {
-                numericInputAsString = Console::Read("Up to what number should we find a prime number? (default=100000): ");
-
-                if (numericInputAsString == "") {
-                    upToNumber == 100000;
-                    break;
-                }
+                numericInputAsString = Console::Read("Up to what number should we find a prime number? (try 10000): ");
 
                 upToNumber = stoull(numericInputAsString);
 
@@ -83,12 +76,7 @@ void application() {
 
             // Try and get a numbers per thread
             while (numericInputAsString == "") {
-                numericInputAsString = Console::Read("How many numbers should be there in a thread? (default=10000): ");
-
-                if (numericInputAsString == "") {
-                    numbersPerThread == 10000;
-                    break;
-                }
+                numericInputAsString = Console::Read("How many numbers should be there in a thread? (try 1000): ");
 
                 numbersPerThread = stoull(numericInputAsString);
 
@@ -103,12 +91,7 @@ void application() {
 
             // Try and get a thread count
             while (numericInputAsString == "") {
-                numericInputAsString = Console::Read("How many threads should there be running at a time? (default=8)");
-
-                if (numericInputAsString == "") {
-                    threadCount == 10000;
-                    break;
-                }
+                numericInputAsString = Console::Read("How many threads should there be running at a time? (try 8): ");
 
                 threadCount = stoull(numericInputAsString);
 
@@ -124,13 +107,31 @@ void application() {
 
             EratosthenesSieve(upToNumber, numbersPerThread, threadCount, true);
 
-            Console::Print("Operation ended in " + Temporal::secondsToLocalisedHms(Temporal::timestampNow() - timeStart));
+            Console::Print("\nOperation ended in " + Temporal::secondsToLocalisedHms(Temporal::timestampNow() - timeStart));
 
             Console::ReadLine("\nPress any key to continue...");
 
             continue;
         }
         else if (choice == "3") {
+            __int64 timeStart = Temporal::timestampNow();
+
+            EratosthenesSieve(10000, 1000, 8, true);
+
+            Console::Print("\nOperation ended in " + Temporal::secondsToLocalisedHms(Temporal::timestampNow() - timeStart));
+
+            Console::ReadLine("\nPress any key to continue...");
+        }
+        else if (choice == "4") {
+            __int64 timeStart = Temporal::timestampNow();
+
+            EratosthenesSieve(1000000, 250000, 16, true);
+
+            Console::Print("\nOperation ended in " + Temporal::secondsToLocalisedHms(Temporal::timestampNow() - timeStart));
+
+            Console::ReadLine("\nPress any key to continue...");
+        }
+        else if (choice == "0") {
             exit = true;
 
             Console::Print("Bye!");

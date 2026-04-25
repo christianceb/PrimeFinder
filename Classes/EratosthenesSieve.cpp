@@ -72,7 +72,6 @@ EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, int busSize, int thre
 
             // Check if the candidateDivisor is divisible by the numbers less than the ones sieved    
             canUseResultAsNextDivisor = linearIsFindResultDivisibleByLtNumbersInBuses(candidateDivisor, buses);
-            //canUseResultAsNextDivisor = threadedIsFindResultDivisibleByLtNumbersInBuses(candidateDivisor, buses);
 
             if (canUseResultAsNextDivisor) {
                 divisor = candidateDivisor.inBusFindResult.value;
@@ -88,6 +87,8 @@ EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, int busSize, int thre
             file.Write(to_string(buses[busIndex][numberIndex]));
         }
     }
+
+    Console::Print("\nResult of Sieve of Eratosthenes can be found at " + file.filename());
 
     file.Close();
 }
@@ -170,73 +171,6 @@ int64_t EratosthenesSieve::linearFindGtIndexInList(size_t number, vector<size_t>
     return -1;
 }
 
-int64_t EratosthenesSieve::btsFindGtIndexInList(size_t number, vector<size_t> bus, int64_t leftMostIndex, int64_t rightMostIndex)
-{
-    // Avoid silly halvings (they do happen, seems just a bad bound check when btsFindGtIndexInList is recursive called, but this'll do)
-    if (leftMostIndex > rightMostIndex) {
-        return -1;
-
-        //throw invalid_argument("Left-most index of btsFindGtIndexInList bigger than rightMostIndex (what?!)");
-    }
-
-    if (leftMostIndex == -1 && rightMostIndex == -1) {
-        leftMostIndex = 0;
-        rightMostIndex = bus.size() - 1;
-    }
-
-    size_t middleIndex = leftMostIndex + (rightMostIndex - leftMostIndex) / 2; // These divisions floor by default https://stackoverflow.com/a/21271883
-    size_t middle = bus[middleIndex];
-
-    /**
-     * Ideas on how to make this work:
-     *
-     * - Either find exactly the index of the number
-     * - find a pair of indices where {x1 < number} and {x2 > number} by 1 index
-     * - or if the number is "cornered" such as that {number < left-most} or {number > right-most}, return -1 (is this really necessary?)
-     */
-
-     // nextNumberNoOverflow - if the number next to the middle index is not an overflow relative to rightMostIndex
-     // middleMatch - If the middle is equal number
-     // numberIsSandwiched - If middle is less than number, but the next number (provided not an overflow) is greater than number (1 < 2 > 3)
-    bool nextNumberNoOverflow = unsigned(middleIndex + 1) <= rightMostIndex,
-        middleMatch = middle == number,
-        numberIsSandwiched = middle < number && bus[middleIndex] > number;
-
-    // If the middle matches the number and the next number is not an overflow, we return the next number. If there is an overflow, we immediately return false.
-    if (middle == number || numberIsSandwiched) {
-        return nextNumberNoOverflow ? middleIndex + 1 : -1;
-    }
-
-    int64_t leftMostSearch = -1, rightMostSearch = -1;
-
-    if (number < middle) {
-        leftMostSearch = btsFindGtIndexInList(number, bus, leftMostIndex, middleIndex - 1);
-    }
-    else {
-        rightMostSearch = btsFindGtIndexInList(number, bus, middleIndex + 1, rightMostIndex);
-    }
-
-    if (leftMostSearch != -1) {
-        return leftMostSearch;
-    }
-    else if (rightMostSearch != -1) {
-        return rightMostSearch;
-    }
-
-    return -1;
-}
-
-int64_t EratosthenesSieve::findGtIndexInList(size_t number, vector<size_t> bus, bool useLinear)
-{
-    if (useLinear) {
-        // Slow O(n)
-        return linearFindGtIndexInList(number, bus);
-    }
-
-    // Fast O(log n) if it's working.
-    return btsFindGtIndexInList(number, bus);
-}
-
 FindNextGtIndexResult EratosthenesSieve::findNextGt(size_t number, vector<vector<size_t>> buses, size_t upToInclusive)
 {
     const size_t BUS_COUNT = buses.size();
@@ -251,7 +185,7 @@ FindNextGtIndexResult EratosthenesSieve::findNextGt(size_t number, vector<vector
     bool nextGtFound = false;
 
     while (guessNumberBusIndex < BUS_COUNT) {
-        int64_t busSearchResult = findGtIndexInList(number, buses[guessNumberBusIndex], true);
+        int64_t busSearchResult = linearFindGtIndexInList(number, buses[guessNumberBusIndex]);
 
         if (busSearchResult >= 0) {
             nextGtIndex = busSearchResult;
@@ -315,24 +249,6 @@ bool EratosthenesSieve::threadedIsFindResultDivisibleByLtNumbersInBuses(FindNext
 
 bool EratosthenesSieve::isFindResultDivisibleByLtNumbersInBuses(FindNextGtIndexResult result, vector<vector<size_t>> buses)
 {
-    std::vector<future<bool>> futures;
-
-    for (size_t busIndex = 0; busIndex <= result.busIndex; busIndex++)
-    {
-        futures.push_back(async(&EratosthenesSieve::isNumberDivisibleByNumbersLt, this, result.inBusFindResult.value, ref(buses[busIndex])));
-    }
-
-    for (size_t i = 0; i < futures.size(); i++)
-    {
-        bool hasDivisible = futures[i].get();
-
-        // Console::Print("Future=" + to_string(i));
-
-        if (hasDivisible) {
-            return true;
-        }
-    }
-
     return false;
 }
 
@@ -342,8 +258,6 @@ bool EratosthenesSieve::linearIsFindResultDivisibleByLtNumbersInBuses(FindNextGt
         size_t busSize = buses[i].size();
 
         for (size_t j = 0; j < busSize; j++) {
-            // Console::Print("linearIsFindResultDivisibleByLtNumbersInBuses=" + to_string(buses[i][j]));
-
             // Terminate as soon as number is bigger than result
             if (buses[i][j] > result.inBusFindResult.value) {
                 return false;
