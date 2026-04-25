@@ -22,7 +22,7 @@ void application() {
         Console::Print("[1] Check if a number is a prime or not");
         Console::Print("[2] Run a custom parameter Sieve of Eratosthenes");
         Console::Print("[3] Run a Sieve of Eratosthenes basic preset (up to 10000, 1000 numbers per thread, 8 threads)");
-        Console::Print("[4] Run a Sieve of Eratosthenes advanced preset (up to 1000000, 250000 numbers per thread, 16 threads)");
+        Console::Print("[4] Run a Sieve of Eratosthenes advanced preset (up to 1000000, 10000 numbers per thread, 16 threads)");
         Console::Print("[0] Exit\n");
         
         choice = Console::Read("Choice: ");
@@ -125,7 +125,7 @@ void application() {
         else if (choice == "4") {
             __int64 timeStart = Temporal::timestampNow();
 
-            EratosthenesSieve(1000000, 250000, 16, true);
+            EratosthenesSieve(1000000, 10000, 16, true);
 
             Console::Print("\nOperation ended in " + Temporal::secondsToLocalisedHms(Temporal::timestampNow() - timeStart));
 
