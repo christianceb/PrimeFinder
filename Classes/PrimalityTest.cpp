@@ -11,6 +11,11 @@ bool PrimalityTest::Test(size_t number)
     // Set starting primeFactors that are very common divisors to composite numbers
     vector<size_t> primeFactors = { 2, 3 };
 
+    // Sanity check
+    if (number <= 1) {
+        return false;
+    }
+
     // Composite numbers are highly likely to fail this test
     if (number % 2 == 0 || number % 3 == 0) {
         return false;

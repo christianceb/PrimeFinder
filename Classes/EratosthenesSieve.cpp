@@ -8,9 +8,11 @@
 
 using namespace std;
 
-EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, bool debug)
+EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, int busSize, int threadCount, bool debug)
 {
     this->debug = debug;
+    this->busSize = busSize;
+    this->threadCount = threadCount;
 
     vector<vector<size_t>> buses = sievePrep(upToInclusive);
     std::vector<std::thread> threads;
@@ -30,7 +32,7 @@ EratosthenesSieve::EratosthenesSieve(size_t upToInclusive, bool debug)
         while (busIndex < fleetSize) {
             threads.clear();
 
-            batchMaxBusIndex += LANES_WIDTH;
+            batchMaxBusIndex += threadCount;
 
             // Prevent batchMaxBusIndex from overflowing the fleet size
             if (batchMaxBusIndex >= fleetSize) {
@@ -110,8 +112,8 @@ vector<vector<size_t>> EratosthenesSieve::sievePrep(size_t upToInclusive)
 {
     vector<vector<size_t>> buses;
 
-    const size_t BUS_COUNT = (upToInclusive + MIN_BUS_SIZE - 1) / MIN_BUS_SIZE;
-    const size_t BUS_SIZE = MIN_BUS_SIZE;
+    const size_t BUS_COUNT = (upToInclusive + busSize - 1) / busSize;
+    const size_t BUS_SIZE = busSize;
 
     size_t primalityTestNumber = STARTING_PRIMALITY_TEST_NUMBER;
 
@@ -119,10 +121,10 @@ vector<vector<size_t>> EratosthenesSieve::sievePrep(size_t upToInclusive)
     {
         vector<size_t> bus;
 
-        size_t maxPrimalityTestNumber = nearestNext(primalityTestNumber, MIN_BUS_SIZE);
+        size_t maxPrimalityTestNumber = nearestNext(primalityTestNumber, busSize);
 
         if (maxPrimalityTestNumber == primalityTestNumber) {
-            maxPrimalityTestNumber += MIN_BUS_SIZE;
+            maxPrimalityTestNumber += busSize;
         }
 
         while (primalityTestNumber <= maxPrimalityTestNumber) {
@@ -238,7 +240,7 @@ int64_t EratosthenesSieve::findGtIndexInList(size_t number, vector<size_t> bus, 
 FindNextGtIndexResult EratosthenesSieve::findNextGt(size_t number, vector<vector<size_t>> buses, size_t upToInclusive)
 {
     const size_t BUS_COUNT = buses.size();
-    const size_t BUS_SIZE = MIN_BUS_SIZE;
+    const size_t BUS_SIZE = busSize;
 
     /**
      * TODO we should not be guessing this. Based on the bus size and index, we should be able to know the upper and lower bound of the bus and return the correct index.
