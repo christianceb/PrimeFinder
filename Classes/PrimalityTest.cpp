@@ -16,7 +16,13 @@ bool PrimalityTest::Test(size_t number)
         return false;
     }
 
-    // We start the probableFactor at 5 because we already have tested 2 and 3, and we know that 4 is composite of 2
+    /**
+     * We start the probableFactor at 5 because we already have tested 2 and 3, and we know that 4 is composite of 2
+     * 
+     * While it is possible to thread each probableFactor while it looks against primeFactors, I'm inclined to believe
+     * it is not only complicated but also unnecessary. There really isn't a bulk of data that a thread can chew on with
+     * this task.
+     */
     for (
         size_t probableFactor = 5;
         probableFactor <= sqrtOf;
@@ -50,7 +56,7 @@ bool PrimalityTest::Test(size_t number)
         // The probableFactor we had is a prime and can be tested against our number
         primeFactors.push_back(probableFactor);
 
-        while (number % probableFactor == 0) {
+        if (number % probableFactor == 0) {
             // A composite
             return false;
         }
