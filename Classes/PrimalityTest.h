@@ -1,5 +1,9 @@
 #pragma once
 
+/**
+ * @brief Utility class to test primality of a number
+ * 
+ */
 class PrimalityTest
 {
 public:
